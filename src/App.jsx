@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, Menu, Search, X } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Menu, Search, X } from 'lucide-react';
 
 const frames = [
   { no: '001', title: 'When an equation becomes motion', topic: 'KINEMATICS', text: 'From symbols on a page to a system you can actually see move.' },
@@ -26,27 +26,28 @@ function PhysicsCanvas() {
     const draw = (time) => {
       const w = canvas.clientWidth, h = canvas.clientHeight;
       ctx.clearRect(0, 0, w, h);
-      const cx = w * 0.53, cy = h * 0.58;
+      const cx = w * 0.52, cy = h * 0.57;
       const scale = Math.min(w, h) * 0.18;
-      const angle = -0.42 + Math.sin(time * 0.00045) * 0.035;
-      const mag = 2.25;
+      const angle = -0.42 + Math.sin(time * 0.00045) * 0.07;
+      const mag = 2.25 + Math.sin(time * 0.0007) * 0.06;
       const ex = cx + Math.cos(angle) * scale * mag;
       const ey = cy + Math.sin(angle) * scale * mag;
 
-      ctx.strokeStyle = 'rgba(255,255,255,.055)'; ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(255,255,255,.045)'; ctx.lineWidth = 1;
       const gap = 42;
-      for (let x = cx % gap; x < w; x += gap) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
-      for (let y = cy % gap; y < h; y += gap) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
-      ctx.strokeStyle = 'rgba(255,255,255,.2)';
+      for (let x = ((cx % gap) + gap) % gap; x < w; x += gap) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
+      for (let y = ((cy % gap) + gap) % gap; y < h; y += gap) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(255,255,255,.18)';
       ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(w,cy); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,h); ctx.stroke();
 
       if (showComponents) {
-        ctx.setLineDash([5,6]); ctx.strokeStyle = 'rgba(94,234,212,.45)';
+        ctx.setLineDash([5,6]); ctx.strokeStyle = 'rgba(125,255,189,.5)';
         ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex,cy); ctx.lineTo(cx,cy); ctx.stroke(); ctx.setLineDash([]);
       }
       ctx.strokeStyle = '#8be9ff'; ctx.lineWidth = 2.2;
-      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke();
+      ctx.shadowColor = 'rgba(139,233,255,.35)'; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(ex,ey); ctx.stroke(); ctx.shadowBlur = 0;
       const a = Math.atan2(ey-cy, ex-cx), head = 12;
       ctx.fillStyle = '#8be9ff'; ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex-Math.cos(a-.5)*head,ey-Math.sin(a-.5)*head); ctx.lineTo(ex-Math.cos(a+.5)*head,ey-Math.sin(a+.5)*head); ctx.closePath(); ctx.fill();
       ctx.font = '12px JetBrains Mono, monospace'; ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fillText('y', cx+8, 18); ctx.fillText('x', w-18, cy-8);
@@ -57,31 +58,43 @@ function PhysicsCanvas() {
     return () => { cancelAnimationFrame(frame); window.removeEventListener('resize', resize); };
   }, [showComponents]);
 
-  return <div className="canvas-shell"><canvas ref={canvasRef}/><div className="canvas-label">VECTOR / 001</div><button className="canvas-toggle" onClick={() => setShowComponents(v => !v)}>{showComponents ? 'components on' : 'components off'}</button></div>;
+  return <div className="canvas-shell"><canvas ref={canvasRef}/><div className="canvas-label">LIVE VECTOR / 001</div><div className="canvas-readout"><span>A</span><strong>2.25</strong><small>θ −24°</small></div><button className="canvas-toggle" onClick={() => setShowComponents(v => !v)}>{showComponents ? 'components on' : 'components off'}</button></div>;
 }
 
 export default function App() {
   const [menu, setMenu] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll(); window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return <div className="site">
-    <header className="nav">
+    <header className={scrolled ? 'nav nav-scrolled' : 'nav'}>
       <a className="brand" href="#top"><span className="brand-mark">∿</span><span>FRAMES <i>/</i> PHYSICS</span></a>
-      <nav className={menu ? 'nav-links open' : 'nav-links'}>{topics.slice(0,5).map(t => <a key={t} href="#frames">{t}</a>)}<a href="#about">ABOUT</a></nav>
-      <div className="nav-actions"><button aria-label="Search"><Search size={17}/></button><button className="menu-btn" onClick={() => setMenu(v=>!v)} aria-label="Menu">{menu ? <X size={19}/> : <Menu size={19}/>}</button></div>
+      <nav className={menu ? 'nav-links open' : 'nav-links'}>
+        <a href="#frames">FRAMES</a><a href="#domains">DOMAINS</a><a href="#about">ABOUT</a><a href="#notes">NOTES</a>
+      </nav>
+      <div className="nav-actions"><button className="search-button" aria-label="Search"><Search size={16}/><span>SEARCH</span></button><button className="menu-btn" onClick={() => setMenu(v=>!v)} aria-label="Menu">{menu ? <X size={19}/> : <Menu size={19}/>}</button></div>
     </header>
 
     <main id="top">
       <section className="hero section-pad">
-        <div className="hero-copy"><div className="eyebrow"><span className="status-dot"/> RESEARCH NOTEBOOK / 001</div><h1>Physics is not<br/><em>just</em> an answer.</h1><p>It is the frame of thought that gets you there.</p><a className="primary" href="#frames">Explore the frames <ArrowUpRight size={16}/></a></div>
-        <div className="hero-art"><PhysicsCanvas/><div className="equation eq-a">∇ · E = ρ / ε₀</div><div className="equation eq-b">F = ma</div><div className="equation eq-c">ψ(x,t)</div></div>
+        <div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/>
+        <div className="hero-copy reveal"><div className="eyebrow"><span className="status-dot"/> RESEARCH NOTEBOOK / 001</div><h1>Physics is not<br/><em>just</em> an answer.</h1><p>It is the frame of thought that gets you there.</p><div className="hero-actions"><a className="primary" href="#frames">Explore the frames <ArrowUpRight size={16}/></a><a className="scroll-cue" href="#frames"><span>SCROLL TO EXPLORE</span><ArrowDownRight size={14}/></a></div></div>
+        <div className="hero-art reveal-delay"><PhysicsCanvas/><div className="equation eq-a">∇ · E = ρ / ε₀</div><div className="equation eq-b">F = ma</div><div className="equation eq-c">ψ(x,t)</div><div className="scan-line"/></div>
+        <div className="hero-bottom"><span>01 — 06 / PHYSICS DOMAINS</span><span>INTERACTIVE RESEARCH SPACE</span></div>
       </section>
 
       <section id="frames" className="frames section-pad"><div className="section-head"><div><span className="eyebrow">THE NOTEBOOK</span><h2>Latest frames.</h2></div><span className="count">03 / 2026</span></div><div className="frame-grid">{frames.map(f => <article className="frame-card" key={f.no}><div className="frame-top"><span>FRAME {f.no}</span><span>{f.topic}</span></div><h3>{f.title}</h3><p>{f.text}</p><a href="#about">Read frame <ArrowUpRight size={15}/></a></article>)}</div></section>
 
       <section id="about" className="manifesto section-pad"><div className="manifesto-index">01</div><div><span className="eyebrow">WHY FRAMES OF PHYSICS</span><h2>A real thought of truth.</h2><p>Equations are compressed ideas. A good frame opens them back up — showing the assumptions, geometry, motion and reasoning underneath.</p></div></section>
 
-      <section className="topics section-pad"><div className="section-head"><div><span className="eyebrow">DOMAINS</span><h2>Where the frames live.</h2></div></div><div className="topic-list">{topics.map((t,i)=><a href="#frames" key={t}><span>0{i+1}</span><strong>{t}</strong><ArrowUpRight size={18}/></a>)}</div></section>
+      <section id="domains" className="topics section-pad"><div className="section-head"><div><span className="eyebrow">DOMAINS</span><h2>Where the frames live.</h2></div></div><div className="topic-list">{topics.map((t,i)=><a href="#frames" key={t}><span>0{i+1}</span><strong>{t}</strong><ArrowUpRight size={18}/></a>)}</div></section>
     </main>
 
-    <footer><div className="footer-brand">FRAMES / PHYSICS</div><div>A real thought of truth.</div><div>© 2026</div></footer>
+    <footer id="notes"><div className="footer-brand">FRAMES / PHYSICS</div><div>A real thought of truth.</div><div>© 2026</div></footer>
   </div>;
 }
