@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ExternalLink, Menu, Search, X } from 'lucide-react';
 import SimulationBackdrop from './SimulationBackdrop';
+import './pitools.css';
 
 const frames = [
   { no: '001', title: 'When an equation becomes motion', topic: 'KINEMATICS', text: 'From symbols on a page to a system you can actually see move.' },
