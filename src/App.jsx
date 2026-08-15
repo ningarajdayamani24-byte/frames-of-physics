@@ -1,6 +1,3 @@
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
-Failed to create stream fd: Operation not permitted
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ExternalLink, Menu, Search, X } from 'lucide-react';
 import SimulationBackdrop from './SimulationBackdrop';
