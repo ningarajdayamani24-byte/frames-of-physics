@@ -1,3 +1,6 @@
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
+Failed to create stream fd: Operation not permitted
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ExternalLink, Menu, Search, X } from 'lucide-react';
 import SimulationBackdrop from './SimulationBackdrop';
@@ -69,7 +72,7 @@ export default function App() {
     <header className={scrolled ? 'nav island' : 'nav'}><a className="brand" href="#top"><span className="brand-mark">∿</span><span>FRAMES <i>/</i> PHYSICS</span></a><nav className={menu ? 'nav-links open' : 'nav-links'}><a href="#frames">FRAMES</a><a href="#domains">DOMAINS</a><a href="#about">ABOUT</a><a href="#notes">NOTES</a></nav><div className="nav-actions"><button className="search-button" aria-label="Search"><Search size={16}/><span>SEARCH</span></button><button className="menu-btn" onClick={() => setMenu(v => !v)} aria-label="Menu">{menu ? <X size={19}/> : <Menu size={19}/>}</button></div></header>
     <main id="top">
       <section ref={heroRef} className="hero section-pad" data-ambient={heroActive ? 'true' : 'false'}><SimulationBackdrop/><div className="hero-film-vignette"/><div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/><div className="equation-cloud">{equations.map((eq, i) => <span key={i} style={{ '--i': i }}>{eq}</span>)}</div>
-        <div className="hero-copy reveal"><div className="eyebrow"><span className="status-dot"/> RESEARCH NOTEBOOK / 001</div><h1>Physics is not<br/><em>just</em> an answer.</h1><p className="tagline">A real thought of truth.</p><p className="hero-description">Every equation begins as a question. Every frame records what came after.</p><div className="hero-actions"><a className="primary" href="#frames">Explore the frames <ArrowUpRight size={16}/></a><a className="scroll-cue" href="#frames"><span>SCROLL TO EXPLORE</span><ArrowDownRight size={14}/></a></div></div>
+        <div className="hero-copy reveal"><div className="eyebrow"><span className="status-dot"/> RESEARCH NOTEBOOK / 001</div><h1>FRAMES<br/><em>OF PHYSICS</em></h1><p className="tagline">A real thought of truth.</p><p className="hero-description">Every equation begins as a question. Every frame records what came after.</p><div className="hero-actions"><a className="primary" href="#frames">Explore the frames <ArrowUpRight size={16}/></a><a className="scroll-cue" href="#frames"><span>SCROLL TO EXPLORE</span><ArrowDownRight size={14}/></a></div></div>
         <div className="hero-art reveal-delay"><PiToolsWindow/><div className="hero-side-equation eq-a">∇ · E = ρ / ε₀</div><div className="hero-side-equation eq-b">F = ma</div><div className="hero-side-equation eq-c">ψ(x,t)</div><div className="scan-line"/></div>
         <div className="hero-bottom"><span>01 — 06 / PHYSICS DOMAINS</span><span>PI / TOOLS — SIMULATION ENVIRONMENT</span></div>
       </section>
