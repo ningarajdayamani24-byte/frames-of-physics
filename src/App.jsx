@@ -14,9 +14,9 @@ const equations = ['F = ma','p = mv','E = mc²','K = ½mv²','τ = Iα','L = Iω
 function PiToolsWindow() {
   const [loaded, setLoaded] = useState(false);
   return <div className="pitools-window">
-    <div className="pitools-chrome"><div className="window-dots"><i/><i/><i/></div><div className="pitools-url"><span>π</span> pitools / simulations / physics</div><a className="pitools-open" href="https://pitools-1io.pages.dev" target="_blank" rel="noreferrer" aria-label="Open PiTools"><ExternalLink size={12}/></a></div>
+    <div className="pitools-chrome"><div className="window-dots"><i/><i/><i/></div><div className="pitools-url"><span>π</span> pitools / simulations / physics</div><a className="pitools-open" href="https://pitools-physics.pages.dev" target="_blank" rel="noreferrer" aria-label="Open PiTools"><ExternalLink size={12}/></a></div>
     <div className="pitools-screen">
-      <iframe title="PiTools physics simulation" src="https://pitools-1io.pages.dev" loading="eager" onLoad={() => setLoaded(true)} />
+      <iframe title="PiTools physics simulation" src="https://pitools-physics.pages.dev" loading="eager" onLoad={() => setLoaded(true)} />
       {!loaded && <div className="pitools-loading"><div className="fallback-grid"/><div className="fallback-title">πTOOLS</div><div className="fallback-sub">PHYSICS SIMULATION ENVIRONMENT</div><div className="fallback-vector"><span/></div><div className="fallback-wave"/><div className="fallback-equation">F = ma</div><div className="fallback-equation e2">v = u + at</div><div className="fallback-status"><b/> LOADING SIMULATION</div></div>}
       <div className="pitools-overlay"/>
     </div>
