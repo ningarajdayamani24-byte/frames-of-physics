@@ -28,14 +28,21 @@ export default function SimulationBackdrop() {
 
   useEffect(() => {
     const canvas = ref.current;
-    const ctx = canvas.getContext('2d');
-    let raf = 0, last = 0, t = 0;
+    const ctx = canvas.getContext('2d', { desynchronized: true });
+    if (!ctx) return undefined;
+    let raf = 0, lastFrame = 0, lastDraw = 0, t = 0;
+    let active = !document.hidden;
+    let width = 1, height = 1;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const targetFrameTime = () => (prefersReducedMotion.matches || window.innerWidth < 700 ? 1000 / 30 : 1000 / 45);
 
     const resize = () => {
       const r = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      canvas.width = Math.max(1, Math.floor(r.width * dpr));
-      canvas.height = Math.max(1, Math.floor(r.height * dpr));
+      width = Math.max(1, Math.floor(r.width));
+      height = Math.max(1, Math.floor(r.height));
+      const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 1 : 1.25);
+      canvas.width = Math.max(1, Math.floor(width * dpr));
+      canvas.height = Math.max(1, Math.floor(height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
@@ -55,8 +62,18 @@ export default function SimulationBackdrop() {
     ];
 
     const draw = (now) => {
-      const dt=Math.min((now-last)/1000||0,.033); last=now; t+=dt;
-      const W=canvas.clientWidth,H=canvas.clientHeight;
+      raf = 0;
+      const elapsed = now - lastFrame;
+      lastFrame = now;
+      if (!active) return;
+      if (now - lastDraw < targetFrameTime()) {
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+      const dt = Math.min(elapsed / 1000 || 0, .05);
+      lastDraw = now;
+      t += dt;
+      const W = width, H = height;
       ctx.clearRect(0,0,W,H);
       const cols=W>1100?4:W>700?3:2, rows=3, gap=18;
       const pw=(W-gap*(cols-1))/cols, ph=(H-gap*(rows-1))/rows;
@@ -69,8 +86,35 @@ export default function SimulationBackdrop() {
       raf=requestAnimationFrame(draw);
     };
 
-    resize(); window.addEventListener('resize',resize); raf=requestAnimationFrame(draw);
-    return()=>{cancelAnimationFrame(raf);window.removeEventListener('resize',resize)};
+    const updateVisibility = () => {
+      active = !document.hidden && !prefersReducedMotion.matches;
+      if (active && !raf) {
+        lastFrame = performance.now();
+        raf = requestAnimationFrame(draw);
+      }
+    };
+    const observer = new IntersectionObserver(([entry]) => {
+      active = entry.isIntersecting && !document.hidden && !prefersReducedMotion.matches;
+      if (active && !raf) {
+        lastFrame = performance.now();
+        raf = requestAnimationFrame(draw);
+      }
+    }, { threshold: 0.01 });
+    const resizeObserver = new ResizeObserver(resize);
+
+    resize();
+    observer.observe(canvas);
+    resizeObserver.observe(canvas);
+    document.addEventListener('visibilitychange', updateVisibility);
+    prefersReducedMotion.addEventListener('change', updateVisibility);
+    raf = requestAnimationFrame(draw);
+    return()=>{
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+      resizeObserver.disconnect();
+      document.removeEventListener('visibilitychange', updateVisibility);
+      prefersReducedMotion.removeEventListener('change', updateVisibility);
+    };
   },[]);
 
   return <canvas ref={ref} className="simulation-backdrop" aria-hidden="true" />;

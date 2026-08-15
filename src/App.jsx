@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ExternalLink, Menu, Search, X } from 'lucide-react';
 import SimulationBackdrop from './SimulationBackdrop';
 import './pitools.css';
@@ -13,7 +13,18 @@ const equations = ['F = ma','p = mv','E = mc²','K = ½mv²','τ = Iα','L = Iω
 
 function PiToolsWindow() {
   const [loaded, setLoaded] = useState(false);
-  return <div className="pitools-window">
+  const windowRef = useRef(null);
+  const [inView, setInView] = useState(true);
+
+  useEffect(() => {
+    const node = windowRef.current;
+    if (!node || !('IntersectionObserver' in window)) return undefined;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.01 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  return <div ref={windowRef} className="pitools-window" data-active={inView ? 'true' : 'false'}>
     <div className="pitools-chrome"><div className="window-dots"><i/><i/><i/></div><div className="pitools-url"><span>π</span> pitools / simulations / physics</div><a className="pitools-open" href="https://pitools-physics.pages.dev" target="_blank" rel="noreferrer" aria-label="Open PiTools"><ExternalLink size={12}/></a></div>
     <div className="pitools-screen">
       <iframe title="PiTools physics simulation" src="https://pitools-physics.pages.dev" loading="eager" onLoad={() => setLoaded(true)} />
@@ -27,11 +38,37 @@ function PiToolsWindow() {
 export default function App() {
   const [menu, setMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  useEffect(() => { const onScroll = () => setScrolled(window.scrollY > 40); onScroll(); window.addEventListener('scroll', onScroll, { passive: true }); return () => window.removeEventListener('scroll', onScroll); }, []);
+  const [heroActive, setHeroActive] = useState(true);
+  const heroRef = useRef(null);
+  useEffect(() => {
+    let frame = 0;
+    let previous = window.scrollY > 40;
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        const next = window.scrollY > 40;
+        if (next !== previous) {
+          previous = next;
+          setScrolled(next);
+        }
+      });
+    };
+    setScrolled(previous);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(frame); };
+  }, []);
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero || !('IntersectionObserver' in window)) return undefined;
+    const observer = new IntersectionObserver(([entry]) => setHeroActive(entry.isIntersecting), { threshold: 0.01 });
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
   return <div className="site">
     <header className={scrolled ? 'nav island' : 'nav'}><a className="brand" href="#top"><span className="brand-mark">∿</span><span>FRAMES <i>/</i> PHYSICS</span></a><nav className={menu ? 'nav-links open' : 'nav-links'}><a href="#frames">FRAMES</a><a href="#domains">DOMAINS</a><a href="#about">ABOUT</a><a href="#notes">NOTES</a></nav><div className="nav-actions"><button className="search-button" aria-label="Search"><Search size={16}/><span>SEARCH</span></button><button className="menu-btn" onClick={() => setMenu(v => !v)} aria-label="Menu">{menu ? <X size={19}/> : <Menu size={19}/>}</button></div></header>
     <main id="top">
-      <section className="hero section-pad"><SimulationBackdrop/><div className="hero-film-vignette"/><div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/><div className="equation-cloud">{equations.map((eq, i) => <span key={i} style={{ '--i': i }}>{eq}</span>)}</div>
+      <section ref={heroRef} className="hero section-pad" data-ambient={heroActive ? 'true' : 'false'}><SimulationBackdrop/><div className="hero-film-vignette"/><div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/><div className="equation-cloud">{equations.map((eq, i) => <span key={i} style={{ '--i': i }}>{eq}</span>)}</div>
         <div className="hero-copy reveal"><div className="eyebrow"><span className="status-dot"/> RESEARCH NOTEBOOK / 001</div><h1>Physics is not<br/><em>just</em> an answer.</h1><p className="tagline">A real thought of truth.</p><p className="hero-description">Every equation begins as a question. Every frame records what came after.</p><div className="hero-actions"><a className="primary" href="#frames">Explore the frames <ArrowUpRight size={16}/></a><a className="scroll-cue" href="#frames"><span>SCROLL TO EXPLORE</span><ArrowDownRight size={14}/></a></div></div>
         <div className="hero-art reveal-delay"><PiToolsWindow/><div className="hero-side-equation eq-a">∇ · E = ρ / ε₀</div><div className="hero-side-equation eq-b">F = ma</div><div className="hero-side-equation eq-c">ψ(x,t)</div><div className="scan-line"/></div>
         <div className="hero-bottom"><span>01 — 06 / PHYSICS DOMAINS</span><span>PI / TOOLS — SIMULATION ENVIRONMENT</span></div>
